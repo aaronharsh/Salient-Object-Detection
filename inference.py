@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import os
+import os.path
 from scipy import misc
 import argparse
 import sys
@@ -20,8 +21,8 @@ def main(args):
 	with tf.Session(config=tf.ConfigProto(gpu_options = gpu_options)) as sess:
 		saver = tf.train.import_meta_graph('./meta_graph/my-model.meta')
 		saver.restore(sess,tf.train.latest_checkpoint('./salience_model'))
-		image_batch = tf.get_collection('image_batch')[0]
-		pred_mattes = tf.get_collection('mask')[0]
+		image_batch = tf.compat.v1.get_collection('image_batch')[0]
+		pred_mattes = tf.compat.v1.get_collection('mask')[0]
 
 		if args.rgb_folder:
 			rgb_pths = os.listdir(args.rgb_folder)
