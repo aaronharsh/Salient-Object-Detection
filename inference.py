@@ -48,7 +48,10 @@ def main(args):
 			feed_dict = {image_batch:rgb}
 			pred_alpha = sess.run(pred_mattes,feed_dict = feed_dict)
 			final_alpha = misc.imresize(np.squeeze(pred_alpha),origin_shape)
-			misc.imsave(os.path.join(output_folder,'alpha.png'),final_alpha)
+			misc.imsave(output_path(output_folder, args.rgb), final_alpha)
+
+def output_path(output_folder, input_filename):
+	return os.path.join(output_folder, 'alpha_' + os.path.splitext(os.path.basename(input_filename))[0] + '.png')
 
 def parse_arguments(argv):
 	parser = argparse.ArgumentParser()
