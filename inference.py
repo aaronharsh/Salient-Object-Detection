@@ -39,19 +39,26 @@ def main(args):
 				misc.imsave(os.path.join(output_folder,rgb_pth),final_alpha)
 
 		else:
-			rgb = misc.imread(args.rgb)
-			if rgb.shape[2]==4:
-				rgb = rgba2rgb(rgb)
-			origin_shape = rgb.shape[:2]
-			rgb = np.expand_dims(misc.imresize(rgb.astype(np.uint8),[320,320,3],interp="nearest").astype(np.float32)-g_mean,0)
+			origin_rgb = misc.imread(args.rgb)
+			if origin_rgb.shape[2]==4:
+				origin_rgb = rgba2rgb(origin_rgb)
+			origin_shape = origin_rgb.shape[:2]
+			rgb = np.expand_dims(misc.imresize(origin_rgb.astype(np.uint8),[320,320,3],interp="nearest").astype(np.float32)-g_mean,0)
 
 			feed_dict = {image_batch:rgb}
 			pred_alpha = sess.run(pred_mattes,feed_dict = feed_dict)
 			final_alpha = misc.imresize(np.squeeze(pred_alpha),origin_shape)
-			misc.imsave(output_path(output_folder, args.rgb), final_alpha)
+			misc.imsave(output_path(output_folder, args.rgb, 'alpha_'), final_alpha)
 
-def output_path(output_folder, input_filename):
-	return os.path.join(output_folder, 'alpha_' + os.path.splitext(os.path.basename(input_filename))[0] + '.png')
+			rgb_alpha = add_alpha_channel_to_rgb(final_alpha, origin_rgb)
+			misc.imsave(output_path(output_folder, args.rgb, 'rgb_alpha_'), rgb_alpha)
+
+def add_alpha_channel_to_rgb(alpha, rgb):
+	s = alpha.shape
+	return np.append(rgb, alpha.reshape((s[0], s[1], 1)), axis=2)
+
+def output_path(output_folder, input_filename, prefix):
+	return os.path.join(output_folder, prefix + os.path.splitext(os.path.basename(input_filename))[0] + '.png')
 
 def parse_arguments(argv):
 	parser = argparse.ArgumentParser()
